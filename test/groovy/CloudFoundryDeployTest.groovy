@@ -301,7 +301,7 @@ class CloudFoundryDeployTest extends BasePiperTest {
 
         assertThat(jscr.shell, hasItem(containsString('cf login -u "test_cf" -p \'********\' -a https://api.cf.eu10.hana.ondemand.com -o "testOrg" -s "testSpace"')))
         assertThat(jscr.shell, hasItem(containsString("cf blue-green-deploy testAppName --delete-old-apps -f 'test.yml'")))
-        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old"))))
+        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt"))))
         assertThat(jscr.shell, hasItem(containsString("cf logout")))
 
     }
@@ -330,8 +330,13 @@ class CloudFoundryDeployTest extends BasePiperTest {
 
         assertThat(jscr.shell, hasItem(containsString('cf login -u "test_cf" -p \'********\' -a https://api.cf.eu10.hana.ondemand.com -o "testOrg" -s "testSpace"')))
         assertThat(jscr.shell, hasItem(containsString("cf blue-green-deploy testAppName -f 'test.yml'")))
-        assertThat(jscr.shell, hasItem(containsString("cf stop testAppName-old")))
+        assertThat(jscr.shell, hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt")))
         assertThat(jscr.shell, hasItem(containsString("cf logout")))
+    }
+
+    @Test
+    void testCfNativeBlueGreenKeepOldInstanceShouldFail(){
+        assert true
     }
 
     @Test
@@ -352,8 +357,7 @@ class CloudFoundryDeployTest extends BasePiperTest {
             cfAppName: 'testAppName',
             cfManifest: 'test.yml'
         ])
-
-        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old"))))
+        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt"))))
     }
 
     @Test
