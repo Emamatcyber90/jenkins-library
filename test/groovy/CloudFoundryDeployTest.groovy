@@ -5,11 +5,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import org.junit.rules.RuleChain
+import org.junit.rules.TemporaryFolder
 import util.BasePiperTest
 import util.JenkinsCredentialsRule
 import util.JenkinsEnvironmentRule
 import util.JenkinsDockerExecuteRule
 import util.JenkinsLoggingRule
+import util.JenkinsReadFileRule
 import util.JenkinsShellCallRule
 import util.JenkinsStepRule
 import util.JenkinsWriteFileRule
@@ -27,10 +29,12 @@ import static org.hamcrest.Matchers.containsString
 
 class CloudFoundryDeployTest extends BasePiperTest {
 
+    private File tmpFile = File.createTempFile('mockoutput', '.txt')
     private ExpectedException thrown = ExpectedException.none()
     private JenkinsLoggingRule jlr = new JenkinsLoggingRule(this)
     private JenkinsShellCallRule jscr = new JenkinsShellCallRule(this)
     private JenkinsWriteFileRule jwfr = new JenkinsWriteFileRule(this)
+    private JenkinsReadFileRule jrfr = new JenkinsReadFileRule(this, tmpFile.getParent(), tmpFile.name)
     private JenkinsDockerExecuteRule jedr = new JenkinsDockerExecuteRule(this)
     private JenkinsStepRule jsr = new JenkinsStepRule(this)
     private JenkinsEnvironmentRule jer = new JenkinsEnvironmentRule(this)
@@ -52,6 +56,7 @@ class CloudFoundryDeployTest extends BasePiperTest {
         .around(jlr)
         .around(jscr)
         .around(jwfr)
+        .around(jrfr)
         .around(jedr)
         .around(jer)
         .around(new JenkinsCredentialsRule(this).withCredentials('test_cfCredentialsId', 'test_cf', '********'))
@@ -301,7 +306,7 @@ class CloudFoundryDeployTest extends BasePiperTest {
 
         assertThat(jscr.shell, hasItem(containsString('cf login -u "test_cf" -p \'********\' -a https://api.cf.eu10.hana.ondemand.com -o "testOrg" -s "testSpace"')))
         assertThat(jscr.shell, hasItem(containsString("cf blue-green-deploy testAppName --delete-old-apps -f 'test.yml'")))
-        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt"))))
+        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old &> cfStopOutput.txt"))))
         assertThat(jscr.shell, hasItem(containsString("cf logout")))
 
     }
@@ -330,13 +335,41 @@ class CloudFoundryDeployTest extends BasePiperTest {
 
         assertThat(jscr.shell, hasItem(containsString('cf login -u "test_cf" -p \'********\' -a https://api.cf.eu10.hana.ondemand.com -o "testOrg" -s "testSpace"')))
         assertThat(jscr.shell, hasItem(containsString("cf blue-green-deploy testAppName -f 'test.yml'")))
-        assertThat(jscr.shell, hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt")))
+        assertThat(jscr.shell, hasItem(containsString("cf stop testAppName-old &> cfStopOutput.txt")))
         assertThat(jscr.shell, hasItem(containsString("cf logout")))
     }
 
     @Test
-    void testCfNativeBlueGreenKeepOldInstanceShouldFail(){
-        assert true
+    void testCfNativeBlueGreenKeepOldInstanceShouldThrowErrorOnStopError(){
+        tmpFile.write('any error message')
+
+        jscr.setReturnValue("cf stop testAppName-old &> cfStopOutput.txt", 1)
+        jrfr.loadFile(tmpFile.absolutePath)
+
+        jryr.registerYaml('test.yml', "applications: [[]]")
+
+        thrown.expect(hudson.AbortException)
+
+        jsr.step.cloudFoundryDeploy([
+            script: nullScript,
+            juStabUtils: utils,
+            jenkinsUtilsStub: new JenkinsUtilsMock(),
+            deployTool: 'cf_native',
+            deployType: 'blue-green',
+            keepOldInstance: true,
+            cfOrg: 'testOrg',
+            cfSpace: 'testSpace',
+            cfCredentialsId: 'test_cfCredentialsId',
+            cfAppName: 'testAppName',
+            cfManifest: 'test.yml'
+        ])
+
+        assertThat(jedr.dockerParams, hasEntry('dockerImage', 's4sdk/docker-cf-cli'))
+        assertThat(jedr.dockerParams, hasEntry('dockerWorkspace', '/home/piper'))
+
+        assertThat(jscr.shell, hasItem(containsString('cf login -u "test_cf" -p \'********\' -a https://api.cf.eu10.hana.ondemand.com -o "testOrg" -s "testSpace"')))
+        assertThat(jscr.shell, hasItem(containsString("cf blue-green-deploy testAppName -f 'test.yml'")))
+        assertThat(jscr.shell, hasItem(containsString("cf stop testAppName-old &> cfStopOutput.txt")))
     }
 
     @Test
@@ -357,7 +390,7 @@ class CloudFoundryDeployTest extends BasePiperTest {
             cfAppName: 'testAppName',
             cfManifest: 'test.yml'
         ])
-        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old > cfStopOutput.txt"))))
+        assertThat(jscr.shell, not(hasItem(containsString("cf stop testAppName-old &> cfStopOutput.txt"))))
     }
 
     @Test

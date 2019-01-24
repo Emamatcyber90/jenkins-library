@@ -201,7 +201,7 @@ private void stopOldAppIfRequired(Map config) {
     String cfStopOutputFileName = 'cfStopOutput.txt'
 
     if (config.keepOldInstance && config.deployType == 'blue-green') {
-        int cfStopReturncode = sh (returnStatus: true, script: "cf stop $oldAppName  > $cfStopOutputFileName")
+        int cfStopReturncode = sh (returnStatus: true, script: "cf stop $oldAppName  &> $cfStopOutputFileName")
 
         if (cfStopReturncode > 0) {
             String cfStopOutput = readFile(file: cfStopOutputFileName)
