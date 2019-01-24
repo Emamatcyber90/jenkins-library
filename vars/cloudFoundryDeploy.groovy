@@ -170,7 +170,7 @@ def deployCfNative (config) {
             set +x
             set -e
             export HOME=${config.dockerWorkspace}
-            cf login -u \"${username}\" -p '${password}' -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
+            cf login -u \"${username}\" -p \"${password}\" -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
             cf plugins
             cf ${deployCommand} ${config.cloudFoundry.appName ?: ''} ${blueGreenDeployOptions} -f '${config.cloudFoundry.manifest}' ${config.smokeTest}
             ${stopOldAppIfRequired(config)}
