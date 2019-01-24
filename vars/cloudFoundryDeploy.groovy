@@ -177,22 +177,21 @@ def deployCfNative (config) {
             """
         echo "aaaaaaaaaaaaaaaaa bis"        
         sh """#!/bin/bash
-            set +x
+            set -x
             set -e
             export HOME=${config.dockerWorkspace}
             ls -l
             echo "SHHHHHHHHHHHHH \"${username}\" HHH '${password}' HHHHHHH"
             cf login -u \"${username}\" -p '${password}' -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
-            ECHO "LLLLLLLLLLLLLL"
+            echo "LLLLLLLLLLLLLL"
             cf plugins
-            echo "SHHHHHHHHHHHHH"
+            echo "HHHHHHHHHHHHH"
             ls -l
             cf ${deployCommand} ${config.cloudFoundry.appName ?: ''} ${blueGreenDeployOptions} -f '${config.cloudFoundry.manifest}' ${config.smokeTest}
             ${stopOldAppIfRequired(config)}
             """
         echo "bbbbbbbbbbbbbbbb"
         sh "cf logout"
-        echo "cccccccccccccccccccccccccccc"
         
     }
 }
