@@ -165,7 +165,17 @@ def deployCfNative (config) {
                 error "[${STEP_NAME}] ERROR: No manifest file ${config.cloudFoundry.manifest} found."
             }
         }
-
+        echo "aaaaaaaaaaaaaaaaa"
+        echo  """#!/bin/bash
+            set +x
+            set -e
+            export HOME=${config.dockerWorkspace}
+            cf login -u \"${username}\" -p '${password}' -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
+            cf plugins
+            cf ${deployCommand} ${config.cloudFoundry.appName ?: ''} ${blueGreenDeployOptions} -f '${config.cloudFoundry.manifest}' ${config.smokeTest}
+            ${stopOldAppIfRequired(config)}
+            """
+        echo "aaaaaaaaaaaaaaaaa bis"        
         sh """#!/bin/bash
             set +x
             set -e
@@ -175,7 +185,10 @@ def deployCfNative (config) {
             cf ${deployCommand} ${config.cloudFoundry.appName ?: ''} ${blueGreenDeployOptions} -f '${config.cloudFoundry.manifest}' ${config.smokeTest}
             ${stopOldAppIfRequired(config)}
             """
+        echo "bbbbbbbbbbbbbbbb"
         sh "cf logout"
+        echo "cccccccccccccccccccccccccccc"
+        
     }
 }
 
