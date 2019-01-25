@@ -186,10 +186,9 @@ def deployCfNative (config) {
             cf login -u \"${username}\" -p '${password}' -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
             echo "LLLLLLLLLLLLLL"
             cf plugins            
-            ls -l
             cf ${deployCommand} ${config.cloudFoundry.appName ?: ''} ${blueGreenDeployOptions} -f '${config.cloudFoundry.manifest}' ${config.smokeTest}
             echo "HHHHHHHHHHHHH"
-            #${stopOldAppIfRequired(config)}
+            ${stopOldAppIfRequired(config)}
             """
         echo "bbbbbbbbbbbbbbbb"
         sh "cf logout"
