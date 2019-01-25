@@ -166,6 +166,7 @@ def deployCfNative (config) {
             }
         }
         echo "aaaaaaaaaaaaaaaaa"
+        echo "AAAAAA config.cloudFoundry.credentialsId AAAAA3
         echo  """#!/bin/bash
             set +x
             set -e
