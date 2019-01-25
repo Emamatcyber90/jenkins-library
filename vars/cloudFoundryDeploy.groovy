@@ -166,7 +166,7 @@ def deployCfNative (config) {
             }
         }
         echo "aaaaaaaaaaaaaaaaa"
-        echo "AAAAAA config.cloudFoundry.credentialsId AAAAA3
+        echo "AAAAAA config.cloudFoundry.credentialsId AAAAA"
         echo  """#!/bin/bash
             set +x
             set -e
@@ -183,7 +183,7 @@ def deployCfNative (config) {
             export HOME=${config.dockerWorkspace}
             ls -l
             echo "SHHHHHHHHHHHHH \"${username}\" HHH '${password}' HHHHHHH"
-            cf login -u \\\"${username}\\\" -p \\\'${password}\\\' -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
+            cf login -u \"${username}\" -p \"'${password}'\" -a ${config.cloudFoundry.apiEndpoint} -o \"${config.cloudFoundry.org}\" -s \"${config.cloudFoundry.space}\"
             echo "LLLLLLLLLLLLLL"
             cf plugins            
             ls -l
