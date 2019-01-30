@@ -4,3 +4,6 @@ echo "MMMMMMMMMM"
 echo "curl -so /dev/null -w '%{response_code}' https://$1 | grep $STATUS_CODE "
 echo "MMMMMMMMMM"
 curl -so /dev/null -w '%{response_code}' https://$1 | grep $STATUS_CODE
+echo "CURL $? CURL"
+curl -so /dev/null -w '%{response_code}' https://$1
+echo "NOGREP $? NOGREP"
